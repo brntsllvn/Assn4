@@ -7,7 +7,56 @@ case class State(contains: List[Int]) {
 case class Water(end: State, sizes: State) {
   type Path = List[State]
 
-  def solve(start: State): Option[Path] = ???
+  def solve(start: State): Option[Path] = solve1(Set(List(start)), Set.empty[State])
+
+  def move(state: State, from: Int, to: Int): State = {
+    val fromHas = state.contains(from)
+    val toHas = state.contains(to)
+    val toSize = sizes.contains(to)
+    val toFree = toSize - toHas
+    val pour = if (toFree < fromHas) toFree else fromHas
+    State(state.contains.zipWithIndex map {
+      case (has, i) if i == from => has - pour
+      case (has, i) if i == to => has + pour
+      case (has, i) => has
+    })
+  }
+
+  def step(state: State): Set[State] = {
+    val all = state.contains zip sizes.contains zipWithIndex
+    val x = for {
+      ((fromHas, fromSize), from) <- all if fromHas > 0
+      ((toHas, toSize), to) <- all if from != to && toHas < toSize
+    } yield move(state, from, to)
+    x.toSet
+  }
+
+  def solveStep(start: Set[Path], known: Set[State]): Set[Path] = {
+    start.headOption match {
+      case Some(p) =>
+        val newStates = step(p.head).filter(!known.contains(_))
+        val next = newStates.map(_ +: p)
+        if (newStates.contains(end)) {
+          next
+        } else {
+          val s2 = solveStep(start - p, known ++ newStates)
+          next ++ s2
+        }
+      case None => Set.empty
+    }
+  }
+
+  def solve1(start: Set[Path], known: Set[State]): Option[Path] = {
+    val next = solveStep(start, known)
+    val newStates = next.map(_.head)
+    if (newStates.contains(end)) {
+      Some(next.filter(_.head == end).head.reverse)
+    } else if (newStates.isEmpty) {
+      None
+    } else {
+      solve1(next, known union newStates)
+    }
+  }
 }
 
 object WaterTest {

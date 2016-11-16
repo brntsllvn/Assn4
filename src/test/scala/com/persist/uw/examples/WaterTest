@@ -1,0 +1,16 @@
+package com.persist.uw.examples
+
+import org.specs2._
+
+class WaterTest extends mutable.Specification {
+
+  import Water
+
+  "add3 adds two simple trees" >> {
+    val tree1 = Int3(4) // 4
+    val tree2 = Int3(2) // 2
+    val addTree = Add3(tree1, tree2)
+    val s = simplify(addTree)
+    s mustEqual Int3(6)
+  }
+}

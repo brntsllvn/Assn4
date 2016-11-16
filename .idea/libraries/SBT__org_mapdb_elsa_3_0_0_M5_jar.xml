@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="SBT: org.mapdb:elsa:3.0.0-M5:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.mapdb/elsa/bundles/elsa-3.0.0-M5.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.mapdb/elsa/docs/elsa-3.0.0-M5-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.mapdb/elsa/srcs/elsa-3.0.0-M5-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
