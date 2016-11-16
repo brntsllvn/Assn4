@@ -1,37 +1,35 @@
 package com.persist.uw.examples
 
-case class State(contains: List[Int]) {
+case class VolumeState(contains: List[Int]) {
   override def toString = contains.mkString("[", ",", "]")
 }
 
-case class Water(end: State, sizes: State) {
-  type Path = List[State]
+case class Water(end: VolumeState, sizes: VolumeState) {
+  type Path = List[VolumeState]
 
-  def solve(start: State): Option[Path] = solve1(Set(List(start)), Set.empty[State])
-
-  def move(state: State, from: Int, to: Int): State = {
+  def pour(state: VolumeState, from: Int, to: Int): VolumeState = {
     val fromHas = state.contains(from)
     val toHas = state.contains(to)
     val toSize = sizes.contains(to)
     val toFree = toSize - toHas
     val pour = if (toFree < fromHas) toFree else fromHas
-    State(state.contains.zipWithIndex map {
+    VolumeState(state.contains.zipWithIndex map {
       case (has, i) if i == from => has - pour
       case (has, i) if i == to => has + pour
       case (has, i) => has
     })
   }
 
-  def step(state: State): Set[State] = {
+  def step(state: VolumeState): Set[VolumeState] = {
     val all = state.contains zip sizes.contains zipWithIndex
     val x = for {
       ((fromHas, fromSize), from) <- all if fromHas > 0
       ((toHas, toSize), to) <- all if from != to && toHas < toSize
-    } yield move(state, from, to)
+    } yield pour(state, from, to)
     x.toSet
   }
 
-  def solveStep(start: Set[Path], known: Set[State]): Set[Path] = {
+  def solveStep(start: Set[Path], known: Set[VolumeState]): Set[Path] = {
     start.headOption match {
       case Some(p) =>
         val newStates = step(p.head).filter(!known.contains(_))
@@ -46,17 +44,18 @@ case class Water(end: State, sizes: State) {
     }
   }
 
-  def solve1(start: Set[Path], known: Set[State]): Option[Path] = {
+  def findShortestPath(start: Set[Path], known: Set[VolumeState]): Option[Path] = {
     val next = solveStep(start, known)
     val newStates = next.map(_.head)
-    if (newStates.contains(end)) {
-      Some(next.filter(_.head == end).head.reverse)
-    } else if (newStates.isEmpty) {
-      None
-    } else {
-      solve1(next, known union newStates)
+
+    newStates match {
+      case x if x.contains(end) => Some(next.filter(_.head == end).head.reverse)
+      case x if x.isEmpty => None
+      case _ => findShortestPath(next, known union newStates)
     }
   }
+
+  def solve(start: VolumeState): Option[Path] = findShortestPath(Set(List(start)), Set.empty[VolumeState])
 }
 
 object WaterTest {
@@ -64,9 +63,9 @@ object WaterTest {
   case class Jar(size: Int, start: Int, end: Int)
 
   def test(name: String, jars: List[Jar]): Unit = {
-    val sizes = State(jars.map(_.size))
-    val start = State(jars.map(_.start))
-    val end = State(jars.map(_.end))
+    val sizes = VolumeState(jars.map(_.size))
+    val start = VolumeState(jars.map(_.start))
+    val end = VolumeState(jars.map(_.end))
     val water = Water(end, sizes)
     val result = water.solve(start)
     println(s"*** $name $sizes ***")
